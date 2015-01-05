@@ -59,23 +59,41 @@ clubK = pygame.image.load('resources/cards/kc.png')
 heartK = pygame.image.load('resources/cards/kh.png')
 spadeK = pygame.image.load('resources/cards/ks.png')
 
+#Global constant
+cards = [ diamondA, clubA, heartA, spadeA, \
+          diamond2, club2, heart2, spade2, \
+          diamond3, club3, heart3, spade3, \
+          diamond4, club4, heart4, spade4, \
+          diamond5, club5, heart5, spade5, \
+          diamond6, club6, heart6, spade6, \
+          diamond7, club7, heart7, spade7, \
+          diamond8, club8, heart8, spade8, \
+          diamond9, club9, heart9, spade9, \
+          diamond10, club10, heart10, spade10, \
+          diamondJ, clubJ, heartJ, spadeJ, \
+          diamondQ, clubQ, heartQ, spadeQ, \
+          diamondK, clubK, heartK, spadeK ]
+
 def main():
+    
     #Initialize Game
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
     pygame.display.set_caption('Blackjack')
+    rcard = random.choice(cards)
 
     #Fill Background
     background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((80, 150, 15))
 
-    # Event loop
+    #Event Loop
     while 1:
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
         screen.blit(background, (0, 0))
+        screen.blit(rcard, (0,30))
         pygame.display.flip()
 
 if __name__ == '__main__':
