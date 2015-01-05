@@ -131,22 +131,24 @@ def genCard(cList, xList):
         cA = 1
     return card, cA
 
-def initGame(cList, xList):
+def initGame(cList, uList, dList):
     userA = 0
-    card1, cA = genCard(cList, xList)
+    dealA = 0
+    card1, cA = genCard(cList, uList)
     userA += cA
-    card2, cA = genCard(cList, xList)
+    card2, cA = genCard(cList, dList)
+    dealA += cA
+    card3, cA = genCard(cList, uList)
     userA += cA
-    return getAmt(card1) + getAmt(card2), userA
+    card4, cA = genCard(cList, dList)
+    dealA += cA
+    return getAmt(card1) + getAmt(card3), userA, getAmt(card2) + getAmt(card4), dealA
 
 def main():
     #Local Variable
     ccards = copy.copy(cards)
     userCard = []
-    dealSum = 0
-    dealA = 0
-    userSum = 0
-    userA = 0
+    dealCard = []
    
     #Initialize Game
     pygame.init()
@@ -157,13 +159,7 @@ def main():
     standTxt = font.render('Stand', 1, black)
     restartTxt = font.render('Restart', 1, black)
     gameoverTxt = font.render('GAME OVER', 1, white)
-    userSum, userA = initGame(ccards, userCard)
-    dcard1 = random.choice(ccards)
-    dealSum += getAmt(dcard1)
-    ccards.remove(dcard1)
-    dcard2 = random.choice(ccards)
-    dealSum += getAmt(dcard2)
-    ccards.remove(dcard2)
+    userSum, userA, dealSum, dealA = initGame(ccards, userCard, dealCard)
     print 'Dealer: %i' % dealSum
     print 'Dealer A: %i' % dealA
     print 'User: %i' % userSum
@@ -176,13 +172,17 @@ def main():
     hitB = pygame.draw.rect(background, gray, (10, 445, 75, 25))
     standB = pygame.draw.rect(background, gray, (95, 445, 75, 25))
 
+    stand = False
+    win = False
+    winNum = 0
+    loseNum = 0
     #Event Loop
     while True:
-        gameover = True if userSum > 21 and userA == 0 else False
+        gameover = True if (userSum >= 21 and userA == 0) or len(userCard) == 5 else False
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
-            if event.type == pygame.MOUSEBUTTONDOWN and not gameover and hitB.collidepoint(pygame.mouse.get_pos()):
+            elif event.type == pygame.MOUSEBUTTONDOWN and not (gameover or stand) and hitB.collidepoint(pygame.mouse.get_pos()):
                 card, cA = genCard(ccards, userCard)
                 userA += cA
                 userSum += getAmt(card)
@@ -191,28 +191,44 @@ def main():
                     userA -= 1
                     userSum -= 10
                     print 'User after A: %i' % userSum
-            if event.type == pygame.MOUSEBUTTONDOWN and not gameover and standB.collidepoint(pygame.mouse.get_pos()):
-                print 'stand'
-            if event.type == pygame.MOUSEBUTTONDOWN and gameover and restartB.collidepoint(pygame.mouse.get_pos()):
+            elif event.type == pygame.MOUSEBUTTONDOWN and not gameover and standB.collidepoint(pygame.mouse.get_pos()):
+                stand = True
+                while dealSum <= userSum and dealSum < 21:
+                    card, cA = genCard(ccards, dealCard)
+                    dealA += cA
+                    dealSum += getAmt(card)
+                    print 'Dealer: %i' % dealSum
+                    while dealSum > 21 and dealA > 0:
+                        dealA -= 1
+                        dealSum -= 10
+                        print 'Dealer after A: %i' % userSum
+            elif event.type == pygame.MOUSEBUTTONDOWN and (gameover or stand) and restartB.collidepoint(pygame.mouse.get_pos()):
                 gameover = False
+                stand = False
                 userCard = []
+                dealCard = []
                 ccards = copy.copy(cards)
-                userSum, userA = initGame(ccards, userCard)
+                userSum, userA, dealSum, dealA = initGame(ccards, userCard, dealCard)
+                print 'Dealer: %i' % dealSum
+                print 'Dealer A: %i' % dealA
                 print 'User: %i' % userSum
+                print 'User A: %i' % userA
                 restartB = pygame.draw.rect(background, (80, 150, 15), (270, 225, 75, 25))
         screen.blit(background, (0, 0))
         screen.blit(hitTxt, (39, 448))
         screen.blit(standTxt, (116, 448))
-        screen.blit(dcard1, (10, 10))
+        for card in dealCard:
+            x = 10 + dealCard.index(card) * 110
+            screen.blit(card, (x, 10))
         screen.blit(cBack, (120, 10))
         for card in userCard:
             x = 10 + userCard.index(card) * 110
             screen.blit(card, (x, 295))
-        if gameover:
+        if gameover or stand:
             screen.blit(gameoverTxt, (270, 200))
             restartB = pygame.draw.rect(background, gray, (270, 225, 75, 25))
             screen.blit(restartTxt, (287, 228))
-            screen.blit(dcard2, (120, 10))
+            screen.blit(dealCard[1], (120, 10))
         pygame.display.update()
             
 
