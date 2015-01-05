@@ -4,8 +4,11 @@
 import pygame
 from pygame.locals import *
 import random
+import copy
 
 #Load Images
+icon = pygame.image.load('resources/icon.png')
+cBack = pygame.image.load('resources/cards/cardback.png')
 diamondA = pygame.image.load('resources/cards/ad.png')
 clubA = pygame.image.load('resources/cards/ac.png')
 heartA = pygame.image.load('resources/cards/ah.png')
@@ -59,7 +62,13 @@ clubK = pygame.image.load('resources/cards/kc.png')
 heartK = pygame.image.load('resources/cards/kh.png')
 spadeK = pygame.image.load('resources/cards/ks.png')
 
-#Global constant
+#Set Icon
+pygame.display.set_icon(icon)
+
+#Global Constants
+black = (0,0,0)
+gray = (192,192,192)
+
 cards = [ diamondA, clubA, heartA, spadeA, \
           diamond2, club2, heart2, spade2, \
           diamond3, club3, heart3, spade3, \
@@ -73,28 +82,108 @@ cards = [ diamondA, clubA, heartA, spadeA, \
           diamondJ, clubJ, heartJ, spadeJ, \
           diamondQ, clubQ, heartQ, spadeQ, \
           diamondK, clubK, heartK, spadeK ]
+cardA = [ diamondA, clubA, heartA, spadeA ]
+card2 = [ diamond2, club2, heart2, spade2 ]
+card3 = [ diamond3, club3, heart3, spade3 ]
+card4 = [ diamond4, club4, heart4, spade4 ]
+card5 = [ diamond5, club5, heart5, spade5 ]
+card6 = [ diamond6, club6, heart6, spade6 ]
+card7 = [ diamond7, club7, heart7, spade7 ]
+card8 = [ diamond8, club8, heart8, spade8 ]
+card9 = [ diamond9, club9, heart9, spade9 ]
+card10 = [ diamond10, club10, heart10, spade10, \
+            diamondJ, clubJ, heartJ, spadeJ, \
+            diamondQ, clubQ, heartQ, spadeQ, \
+            diamondK, clubK, heartK, spadeK ]
+
+def getAmt(card):
+    if card in cardA:
+        return 1
+    elif card in card2:
+        return 2
+    elif card in card3:
+        return 3
+    elif card in card4:
+        return 4
+    elif card in card5:
+        return 5
+    elif card in card6:
+        return 6
+    elif card in card7:
+        return 7
+    elif card in card8:
+        return 8
+    elif card in card9:
+        return 9
+    elif card in card10:
+        return 10
+    else:
+        print 'getAmt broke'
+        exit()
+
+def genCard(cList, xList):
+    card = random.choice(cList)
+    cList.remove(card)
+    xList.append(card)
+    return card
 
 def main():
-    
+    #Local Variable
+    ccards = copy.copy(cards)
+    userCard = []
+    dealSum = 0
+    dealA = 0
+    userSum = 0
+    userA = 0
+   
     #Initialize Game
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
     pygame.display.set_caption('Blackjack')
-    rcard = random.choice(cards)
+    font = pygame.font.SysFont('arial', 15)
+    hitTxt = font.render('Hit', 1, black)
+    standTxt = font.render('Stand', 1, black)
+    rcard1 = genCard(ccards,userCard)
+    userSum += getAmt(rcard1)
+    dcard1 = random.choice(ccards)
+    dealSum += getAmt(dcard1)
+    ccards.remove(dcard1)
+    rcard2 = genCard(ccards,userCard)
+    userSum += getAmt(rcard2)
+    dcard2 = random.choice(ccards)
+    dealSum += getAmt(dcard2)
+    ccards.remove(dcard2)
+    print 'Dealer: %i' % dealSum
+    print 'User: %i' % userSum
 
     #Fill Background
     background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((80, 150, 15))
+    hitB = pygame.draw.rect(background, gray, (10, 445, 75, 25))
+    standB = pygame.draw.rect(background, gray, (95, 445, 75, 25))
 
     #Event Loop
     while 1:
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN and hitB.collidepoint(pygame.mouse.get_pos()):
+                card = genCard(ccards, userCard)
+                userSum += getAmt(card)
+                print 'User: %i' % userSum
+            if event.type == pygame.MOUSEBUTTONDOWN and standB.collidepoint(pygame.mouse.get_pos()):
+                print 'stand'
         screen.blit(background, (0, 0))
-        screen.blit(rcard, (0,30))
-        pygame.display.flip()
+        screen.blit(hitTxt, (39, 448))
+        screen.blit(standTxt, (116, 448))
+        screen.blit(dcard1, (10, 10))
+        screen.blit(cBack, (120, 10))
+        for card in userCard:
+            var = userCard.index(card)
+            x = 10 + var * 110
+            screen.blit(card, (x, 295))
+        pygame.display.update()
 
 if __name__ == '__main__':
     main()
