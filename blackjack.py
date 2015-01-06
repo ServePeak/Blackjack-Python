@@ -147,8 +147,11 @@ def initGame(cList, uList, dList):
 def main():
     #Local Variable
     ccards = copy.copy(cards)
+    stand = False
     userCard = []
     dealCard = []
+    winNum = 0
+    loseNum = 0
    
     #Initialize Game
     pygame.init()
@@ -171,14 +174,17 @@ def main():
     background.fill((80, 150, 15))
     hitB = pygame.draw.rect(background, gray, (10, 445, 75, 25))
     standB = pygame.draw.rect(background, gray, (95, 445, 75, 25))
+    ratioB = pygame.draw.rect(background, gray, (555, 420, 75, 50))
 
-    stand = False
-    win = False
-    winNum = 0
-    loseNum = 0
     #Event Loop
     while True:
         gameover = True if (userSum >= 21 and userA == 0) or len(userCard) == 5 else False
+        if len(userCard) == 2 and userSum == 21:
+            gameover = True
+        elif len(dealCard) == 2 and dealSum == 21:
+            gameover = True
+        winTxt = font.render('Wins: %i' % winNum, 1, black)
+        loseTxt = font.render('Losses: %i' % loseNum, 1, black)
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -193,7 +199,7 @@ def main():
                     print 'User after A: %i' % userSum
             elif event.type == pygame.MOUSEBUTTONDOWN and not gameover and standB.collidepoint(pygame.mouse.get_pos()):
                 stand = True
-                while dealSum <= userSum and dealSum < 21:
+                while dealSum <= userSum and dealSum < 17:
                     card, cA = genCard(ccards, dealCard)
                     dealA += cA
                     dealSum += getAmt(card)
@@ -201,15 +207,23 @@ def main():
                     while dealSum > 21 and dealA > 0:
                         dealA -= 1
                         dealSum -= 10
-                        print 'Dealer after A: %i' % userSum
+                        print 'Dealer after A: %i' % dealSum
             elif event.type == pygame.MOUSEBUTTONDOWN and (gameover or stand) and restartB.collidepoint(pygame.mouse.get_pos()):
+                if userSum == dealSum:
+                    pass
+                elif userSum <= 21 and len(userCard) == 5:
+                    winNum += 1
+                elif userSum <= 21 and dealSum < userSum or dealSum > 21:
+                    winNum += 1
+                else:
+                    loseNum += 1
                 gameover = False
                 stand = False
                 userCard = []
                 dealCard = []
                 ccards = copy.copy(cards)
                 userSum, userA, dealSum, dealA = initGame(ccards, userCard, dealCard)
-                print 'Dealer: %i' % dealSum
+                print 'New Dealer: %i' % dealSum
                 print 'Dealer A: %i' % dealA
                 print 'User: %i' % userSum
                 print 'User A: %i' % userA
@@ -217,6 +231,8 @@ def main():
         screen.blit(background, (0, 0))
         screen.blit(hitTxt, (39, 448))
         screen.blit(standTxt, (116, 448))
+        screen.blit(winTxt, (565, 423))
+        screen.blit(loseTxt, (565, 448))
         for card in dealCard:
             x = 10 + dealCard.index(card) * 110
             screen.blit(card, (x, 10))
