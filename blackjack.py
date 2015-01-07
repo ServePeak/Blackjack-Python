@@ -98,6 +98,8 @@ card10 = [ diamond10, club10, heart10, spade10, \
             diamondK, clubK, heartK, spadeK ]
 
 def getAmt(card):
+    ''' Returns the amount the card is worth.
+E.g. Ace is default 11. 10/Jack/Queen/King is 10.'''
     if card in cardA:
         return 11
     elif card in card2:
@@ -123,6 +125,8 @@ def getAmt(card):
         exit()
 
 def genCard(cList, xList):
+    '''Generates an card from cList, removes it from cList, and appends it to xList.
+Returns if card is Ace and the card itself.'''
     cA = 0
     card = random.choice(cList)
     cList.remove(card)
@@ -132,6 +136,8 @@ def genCard(cList, xList):
     return card, cA
 
 def initGame(cList, uList, dList):
+    '''Generates two cards for dealer and user, one at a time for each.
+Returns if card is Ace and the total amount of the cards per person.'''
     userA = 0
     dealA = 0
     card1, cA = genCard(cList, uList)
@@ -163,10 +169,6 @@ def main():
     restartTxt = font.render('Restart', 1, black)
     gameoverTxt = font.render('GAME OVER', 1, white)
     userSum, userA, dealSum, dealA = initGame(ccards, userCard, dealCard)
-    print 'Dealer: %i' % dealSum
-    print 'Dealer A: %i' % dealA
-    print 'User: %i' % userSum
-    print 'User A: %i' % userA
 
     #Fill Background
     background = pygame.Surface(screen.get_size())
@@ -178,17 +180,23 @@ def main():
 
     #Event Loop
     while True:
+        #checks if game is over
         gameover = True if (userSum >= 21 and userA == 0) or len(userCard) == 5 else False
         if len(userCard) == 2 and userSum == 21:
             gameover = True
         elif len(dealCard) == 2 and dealSum == 21:
             gameover = True
+
+        #background needs to be redisplayed because it gets updated
         winTxt = font.render('Wins: %i' % winNum, 1, black)
         loseTxt = font.render('Losses: %i' % loseNum, 1, black)
+
+        #checks for mouse clicks on buttons
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN and not (gameover or stand) and hitB.collidepoint(pygame.mouse.get_pos()):
+                #gives player a card if they don't break blackjack rules
                 card, cA = genCard(ccards, userCard)
                 userA += cA
                 userSum += getAmt(card)
@@ -196,8 +204,8 @@ def main():
                 while userSum > 21 and userA > 0:
                     userA -= 1
                     userSum -= 10
-                    print 'User after A: %i' % userSum
             elif event.type == pygame.MOUSEBUTTONDOWN and not gameover and standB.collidepoint(pygame.mouse.get_pos()):
+                #when player stands, the dealer plays
                 stand = True
                 while dealSum <= userSum and dealSum < 17:
                     card, cA = genCard(ccards, dealCard)
@@ -207,8 +215,8 @@ def main():
                     while dealSum > 21 and dealA > 0:
                         dealA -= 1
                         dealSum -= 10
-                        print 'Dealer after A: %i' % dealSum
             elif event.type == pygame.MOUSEBUTTONDOWN and (gameover or stand) and restartB.collidepoint(pygame.mouse.get_pos()):
+                #restarts the game, updating scores
                 if userSum == dealSum:
                     pass
                 elif userSum <= 21 and len(userCard) == 5:
@@ -223,28 +231,32 @@ def main():
                 dealCard = []
                 ccards = copy.copy(cards)
                 userSum, userA, dealSum, dealA = initGame(ccards, userCard, dealCard)
-                print 'New Dealer: %i' % dealSum
-                print 'Dealer A: %i' % dealA
-                print 'User: %i' % userSum
-                print 'User A: %i' % userA
                 restartB = pygame.draw.rect(background, (80, 150, 15), (270, 225, 75, 25))
+
         screen.blit(background, (0, 0))
         screen.blit(hitTxt, (39, 448))
         screen.blit(standTxt, (116, 448))
         screen.blit(winTxt, (565, 423))
         screen.blit(loseTxt, (565, 448))
+
+        #displays dealer's cards
         for card in dealCard:
             x = 10 + dealCard.index(card) * 110
             screen.blit(card, (x, 10))
         screen.blit(cBack, (120, 10))
+
+        #displays player's cards
         for card in userCard:
             x = 10 + userCard.index(card) * 110
             screen.blit(card, (x, 295))
+
+        #when game is over, draws restart button and text, and shows the dealer's second card
         if gameover or stand:
             screen.blit(gameoverTxt, (270, 200))
             restartB = pygame.draw.rect(background, gray, (270, 225, 75, 25))
             screen.blit(restartTxt, (287, 228))
             screen.blit(dealCard[1], (120, 10))
+            
         pygame.display.update()
             
 
